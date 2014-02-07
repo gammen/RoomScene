@@ -15,87 +15,61 @@ using System.Collections;
 /// - Add a MouseLook script to the camera.
 ///   -> Set the mouse look to use LookY. (You want the camera to tilt up and down like a head. The character already turns.)
 [AddComponentMenu("Camera-Control/Mouse Look")]
-public class TouchLook : MonoBehaviour {
+public class TouchLook : MonoBehaviour
+{
 
-	public float sensitivityX = 15F;
-
-	public float minimumX = -360F;
-	public float maximumX = 360F;
-	
-
-	public float guiboxHeight= 30F;
-	public float guiboxWidth= 200F;
-
-	float rotationY = 0F;
-
-	float touchX = 0F;
-	float touchY = 0F;
-
-	float posLeft = 5F;
-	float posTop = 5F;
-
-	void Update ()
-	{
-		//if (!Input.GetMouseButton (0))
-		//	return;
-		//transform.Rotate(0, Input.GetAxis("Mouse X") * sensitivityX, 0);
-		if (Input.touchCount > 0) 
+		enum TouchLookCommand
 		{
-			Touch lastTouch = Input.GetTouch(Input.touchCount-1);
+				TlCmd_TurnLeft=0,
+				TlCmd_TurnRight,
+				TlCmd_None
+		}
+		public float sensitivityX = 1F;
+		public float minimumX = -360F;
+		public float maximumX = 360F;
+		public float guiboxHeight = 30F;
+		public float guiboxWidth = 200F;
+		float posLeft = 5F;
+		float posTop = 5F;
+		TouchLookCommand touchLookCmd = TouchLookCommand.TlCmd_None;
 
-			if (lastTouch.phase == TouchPhase.Ended)
-			{
-				touchX = lastTouch.position.x;
-				touchY = lastTouch.position.y;
+		void Update ()
+		{
+				//if (!Input.GetMouseButton (0))
+				//	return;
+				//transform.Rotate(0, Input.GetAxis("Mouse X") * sensitivityX, 0);
 
-				if (isLeftTurnTouched(lastTouch.position))
-				{
-					// Turn Left
-					transform.Rotate(0,-sensitivityX,0);
+				if (touchLookCmd != TouchLookCommand.TlCmd_None) {
+						switch (touchLookCmd) {
+						case TouchLookCommand.TlCmd_TurnLeft:
+						// Turn Left
+								transform.Rotate (0, -sensitivityX, 0);
+								break;
+						case TouchLookCommand.TlCmd_TurnRight:
+						// Turn Right
+								transform.Rotate (0, sensitivityX, 0);
+								break;
+						}
+						touchLookCmd = TouchLookCommand.TlCmd_None;
 				}
-				else if(isRightTurnTouched(lastTouch.position))
-				{
-					// Turn Right
-					transform.Rotate(0,sensitivityX,0);
+		}
+
+		void Start ()
+		{
+				// Make the rigid body not change rotation
+				if (rigidbody)
+						rigidbody.freezeRotation = true;
+		}
+
+		void OnGUI ()
+		{
+				if (GUI.RepeatButton (new Rect (posLeft, posTop, guiboxWidth, guiboxHeight), "Left")) {
+						touchLookCmd = TouchLookCommand.TlCmd_TurnLeft;
 				}
-			}
-
+				if (GUI.RepeatButton (new Rect (Screen.width - posLeft - guiboxWidth, posTop, guiboxWidth, guiboxHeight), "Right")) {
+						touchLookCmd = TouchLookCommand.TlCmd_TurnRight;
+				}
+				//GUI.Label (new Rect (posLeft, posTop + guiboxHeight , guiboxWidth, guiboxHeight), touchX.ToString ());
+				//GUI.Label (new Rect (posLeft, posTop + guiboxHeight * 2, guiboxWidth, guiboxHeight), touchY.ToString ());
 		}
-	}
-
-	bool isLeftTurnTouched(Vector2 pos)
-	{
-		if ((pos.x >= posLeft && pos.x <= posLeft+guiboxWidth)
-		    &&
-		    (pos.y <= (Screen.height- posTop) && pos.y >= (Screen.height - posTop - guiboxWidth))
-		    ) 
-		{
-			return true;
-		}
-		return false;
-	}
-	bool isRightTurnTouched(Vector2 pos)
-	{
-		if ((pos.x <= (Screen.width - posLeft) && pos.x >= (Screen.width - posLeft-guiboxWidth))
-		    &&
-		    (pos.y <= (Screen.height- posTop) && pos.y >= (Screen.height - posTop - guiboxWidth))
-		    ) 
-		{
-			return true;
-		}
-		return false;
-	}
-	void Start ()
-	{
-		// Make the rigid body not change rotation
-		if (rigidbody)
-			rigidbody.freezeRotation = true;
-	}
-	void OnGUI()
-	{
-		GUI.Box (new Rect(posLeft,posTop,guiboxWidth,guiboxHeight), "Left");
-		GUI.Box (new Rect(Screen.width-posLeft-guiboxWidth,posTop,guiboxWidth,guiboxHeight), "Right");
-		//GUI.Label (new Rect (posLeft, posTop + guiboxHeight , guiboxWidth, guiboxHeight), touchX.ToString ());
-		//GUI.Label (new Rect (posLeft, posTop + guiboxHeight * 2, guiboxWidth, guiboxHeight), touchY.ToString ());
-	}
 }
