@@ -59,6 +59,13 @@ public class TouchLook : MonoBehaviour
 				// Make the rigid body not change rotation
 				if (rigidbody)
 						rigidbody.freezeRotation = true;
+//				GameObject screen = GameObject.Find("Screen");
+//				if (screen) 
+//				{
+//						Vector3 scale = screen.transform.localScale;
+//						scale.y = scale.y * (float)(0.5);
+//						screen.transform.localScale = scale;
+//				}
 		}
 
 		void OnGUI ()
