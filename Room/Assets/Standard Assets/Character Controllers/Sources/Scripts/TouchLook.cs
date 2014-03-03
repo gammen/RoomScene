@@ -22,6 +22,7 @@ public class TouchLook : MonoBehaviour
 	{
 		TlCmd_TurnLeft=0,
 		TlCmd_TurnRight,
+		TlCmd_ChangeRoomScale,
 		TlCmd_None
 	}
 	enum TouchLookView
@@ -37,10 +38,13 @@ public class TouchLook : MonoBehaviour
 	float posLeft = 5F;
 	float posTop = 5F;
 	TouchLookCommand touchLookCmd = TouchLookCommand.TlCmd_None;
-	TouchLookView touchLookView = TouchLookView.TlVw_Normal;
+	TouchLookView touchLookView = TouchLookView.TlVw_Top;
 	bool changeView = false;
 	float vwCapNormalPosY = 20.0F;
 	float vwCapTopPosY = 80.0F;
+	float roomScale = 100F;
+	float roomScaleWidth = 1.0F;
+	float roomScaleLength = 1.0F;
 
 
 	void Update ()
@@ -59,25 +63,24 @@ public class TouchLook : MonoBehaviour
 			// Turn Right
 				transform.Rotate (0, sensitivityX, 0);
 				break;
+			case TouchLookCommand.TlCmd_ChangeRoomScale:
+				GameObject floor = GameObject.Find("Floor");
+				if (floor)
+				{
+					Vector3 scale = floor.transform.localScale;
+					scale.x = roomScale * roomScaleWidth;
+					scale.z = roomScale * roomScaleLength;
+					floor.transform.localScale = scale;
+					changeCurrentView(touchLookView,true);
+				}
+				break;
 			}
 			touchLookCmd = TouchLookCommand.TlCmd_None;
 		}
 		if (changeView) 
 		{
-				Vector3 pos = transform.localPosition;
-				switch(touchLookView)
-				{
-				case TouchLookView.TlVw_Normal:
-					pos.y = vwCapNormalPosY;
-					transform.Rotate(-90,0,0);
-					break;
-				case TouchLookView.TlVw_Top:
-					pos.y = vwCapTopPosY;
-					transform.Rotate(90,0,0);
-					break;
-				}
-				transform.localPosition = pos;
-				changeView = false;
+			changeCurrentView(touchLookView,false);
+ 			changeView = false;
 		}
 	}
 
@@ -93,15 +96,46 @@ public class TouchLook : MonoBehaviour
 //						scale.y = scale.y * (float)(0.5);
 //						screen.transform.localScale = scale;
 //				}
+		changeCurrentView (touchLookView,false);
 	}
 
+	void changeCurrentView(TouchLookView view, bool noRotation)
+	{
+		Vector3 pos = transform.localPosition;
+		switch(view)
+		{
+		case TouchLookView.TlVw_Normal:
+			pos.y = vwCapNormalPosY;
+			if (!noRotation)
+			{
+				transform.Rotate(-90,0,0);
+			}
+			break;
+		case TouchLookView.TlVw_Top:
+			if (roomScaleWidth*roomScaleLength != 1.0F)
+			{
+
+				pos.y = vwCapTopPosY* Mathf.Max(roomScaleWidth,roomScaleLength);
+			}
+			else
+			{
+				pos.y = vwCapTopPosY;
+			}
+			if (!noRotation)
+			{
+				transform.Rotate(90,0,0);
+			}
+			break;
+		}
+		transform.localPosition = pos;
+	}
 	void OnGUI ()
 	{
 		if (touchLookView == TouchLookView.TlVw_Normal) {
-			if (GUI.RepeatButton (new Rect (posLeft, posTop, guiboxWidth, guiboxHeight), "Left")) {
+			if (GUI.RepeatButton (new Rect (posLeft, posTop, guiboxWidth, guiboxHeight), "<<")) {
 				touchLookCmd = TouchLookCommand.TlCmd_TurnLeft;
 			}
-			if (GUI.RepeatButton (new Rect (Screen.width - posLeft - guiboxWidth, posTop, guiboxWidth, guiboxHeight), "Right")) {
+			if (GUI.RepeatButton (new Rect (Screen.width - posLeft - guiboxWidth, posTop, guiboxWidth, guiboxHeight), ">>")) {
 				touchLookCmd = TouchLookCommand.TlCmd_TurnRight;
 			}
 			if (GUI.Button (new Rect (Screen.width/2 - guiboxWidth/2, posTop, guiboxWidth, guiboxHeight), "Top View")) {
@@ -112,6 +146,22 @@ public class TouchLook : MonoBehaviour
 			if (GUI.Button (new Rect (Screen.width/2 - guiboxWidth/2, posTop, guiboxWidth, guiboxHeight), "Normal View")) {
 				touchLookView = TouchLookView.TlVw_Normal;
 				changeView = true;
+			}
+			if (GUI.Button (new Rect (posLeft, posTop, guiboxWidth, guiboxHeight), "<")) {
+				roomScaleWidth += 0.2F;
+				if (roomScaleWidth > 2.0F)
+				{
+					roomScaleWidth = 1.0F;
+				}
+				touchLookCmd = TouchLookCommand.TlCmd_ChangeRoomScale;
+			}
+			if (GUI.Button (new Rect (Screen.width - posLeft - guiboxWidth, posTop, guiboxWidth, guiboxHeight), "^")) {
+				roomScaleLength += 0.2F;
+				if (roomScaleLength > 2.0F)
+				{
+					roomScaleLength = 1.0F;
+				}
+				touchLookCmd = TouchLookCommand.TlCmd_ChangeRoomScale;
 			}
 		}
 	}
