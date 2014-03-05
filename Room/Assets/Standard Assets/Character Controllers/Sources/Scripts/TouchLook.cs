@@ -45,6 +45,8 @@ public class TouchLook : MonoBehaviour
 	float roomScale = 100F;
 	float roomScaleWidth = 1.0F;
 	float roomScaleLength = 1.0F;
+	float roomLengthChange = 0.2F;
+	float roomWidthChange = 0.2F;
 
 
 	void Update ()
@@ -147,18 +149,30 @@ public class TouchLook : MonoBehaviour
 				touchLookView = TouchLookView.TlVw_Normal;
 				changeView = true;
 			}
-			if (GUI.Button (new Rect (posLeft, posTop, guiboxWidth, guiboxHeight), "<")) {
-				roomScaleWidth += 0.2F;
+			if (GUI.Button (new Rect (posLeft, posTop, guiboxWidth, guiboxHeight), "Width")) {
+				roomScaleWidth += roomWidthChange;
 				if (roomScaleWidth > 2.0F)
 				{
+					roomWidthChange = -1*roomWidthChange;
+					roomScaleWidth = 2.0F;
+				}
+				if (roomScaleWidth < 1.0F)
+				{
+					roomWidthChange = -1*roomWidthChange;
 					roomScaleWidth = 1.0F;
 				}
 				touchLookCmd = TouchLookCommand.TlCmd_ChangeRoomScale;
 			}
-			if (GUI.Button (new Rect (Screen.width - posLeft - guiboxWidth, posTop, guiboxWidth, guiboxHeight), "^")) {
-				roomScaleLength += 0.2F;
-				if (roomScaleLength > 2.0F)
+			if (GUI.Button (new Rect (Screen.width - posLeft - guiboxWidth, posTop, guiboxWidth, guiboxHeight), "Length")) {
+				roomScaleLength += roomLengthChange;
+				if (roomScaleLength > 2.0F)				
 				{
+					roomLengthChange = -1*roomLengthChange;
+					roomScaleLength = 2.0F;
+				}
+				if (roomScaleLength < 1.0F)
+				{
+					roomLengthChange = -1*roomLengthChange;
 					roomScaleLength = 1.0F;
 				}
 				touchLookCmd = TouchLookCommand.TlCmd_ChangeRoomScale;
